@@ -1,5 +1,4 @@
 # Module: open-source
-Trigger: the code repository is public, or outside contributors are expected.
 Adds: `.claude/rules/open-source.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `SECURITY.md`, `docs/releasing.md`.
 ## Append
 - .gitignore | /project/
@@ -10,4 +9,3 @@ Adds: `.claude/rules/open-source.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `SECURI
 - Keep `SOLO_PATHS="project"` in `.claude/hooks/guard.sh` as installed, so pushes inside `project/` pass.
 - Install with `--mode human-review`. If review is installed, add a changelog line to its pull request template.
 - Set the security contact in `SECURITY.md`.
-Skip when: the repo stays private.

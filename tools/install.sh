@@ -7,10 +7,14 @@
 # --code adds the module "code". The merge mode (default solo) sets the push
 # flag in the installed guard, replaces {{MERGE_MODE}} in the installed
 # markdown files, and picks one git rule (git-solo.md for solo, git-review.md
-# for the others), installed as .claude/rules/git.md.
+# for the others), installed as .claude/rules/git.md. The first install records
+# the mode in DIR/project/.mode; a later run without --mode reads it, and a
+# different --mode stops with a message, because the mode is changed by hand.
 # Then it applies each module's "## Append" lines and prints its "## Manual"
 # steps. An existing file is never overwritten: the new version is written
-# beside it as <file>.project-start and listed at the end. A file listed in
+# beside it as <file>.project-start and listed at the end. When two modules
+# ship the same file, the second one's text is added to the first under a
+# "## <module> additions" heading. A file listed in
 # DIR/project/.installed is never copied again, even if you deleted it, so a
 # module can be added later without bringing back what you dropped.
 # DIR/project/.installed lists the files and DIR/project/.modules the modules;
@@ -29,7 +33,8 @@ usage() {
 Usage: sh tools/install.sh --target DIR [--mode MODE] [--code] [--modules a,b,c]
 
   --target DIR     project folder to install into (created if missing)
-  --mode MODE      solo (default), orchestrator, human-review or issues-only
+  --mode MODE      solo (default for a new project), orchestrator, human-review or
+                   issues-only; a later run reads the mode recorded in project/.mode
   --code           add the module "code" (check script, rules, docs rule)
   --modules LIST   comma-separated module names, for example review,privacy
 EOF
@@ -40,7 +45,7 @@ ROOT=$(cd "$(dirname "$0")/.." && pwd) || die "cannot find the project-start fol
 TARGET=""
 CODE=0
 MODULES=""
-MODE=solo
+MODE=""
 while [ $# -gt 0 ]; do
   case $1 in
     --target)
@@ -78,7 +83,7 @@ done
   die "--target is required"
 }
 case $MODE in
-  solo | orchestrator | human-review | issues-only) ;;
+  "" | solo | orchestrator | human-review | issues-only) ;;
   *) die "bad --mode: $MODE (solo, orchestrator, human-review or issues-only)" ;;
 esac
 [ -d "$ROOT/core/files" ] || die "missing $ROOT/core/files"
@@ -117,6 +122,18 @@ case "$TARGET/" in
   "$ROOT"/*) die "the target must be outside the project-start folder" ;;
 esac
 
+# The mode is recorded at the first install and read back afterwards.
+MODEFILE=$TARGET/project/.mode
+PREVMODE=""
+[ -f "$MODEFILE" ] && PREVMODE=$(tr -d '\r' <"$MODEFILE" | head -n 1 | tr -d ' ')
+if [ -n "$PREVMODE" ]; then
+  if [ -n "$MODE" ] && [ "$MODE" != "$PREVMODE" ]; then
+    die "this project is in mode $PREVMODE (project/.mode), and --mode $MODE was given; change the mode by hand: set the mode line in project/working-agreement.md and the text in project/.mode, set ALLOW_DEFAULT_BRANCH_PUSH in .claude/hooks/guard.sh (1 for solo, 0 for the others), and replace .claude/rules/git.md with git-solo.md (solo) or git-review.md (the others) from modules/code/files/.claude/rules/. Or run again without --mode to keep $PREVMODE."
+  fi
+  MODE=$PREVMODE
+fi
+[ -n "$MODE" ] || MODE=solo
+
 TMP=${TMPDIR:-/tmp}/ps-install.$$
 mkdir -p "$TMP" || die "cannot create a temp folder"
 trap 'rm -rf "$TMP"' EXIT
@@ -126,6 +143,7 @@ PREV=$TARGET/project/.installed
 : >"$TMP/new"
 : >"$TMP/conf"
 COPIED=0
+MERGED=0
 SAME=0
 KEPT=0
 
@@ -151,6 +169,7 @@ fixup() {
 
 copy_tree() {
   src=$1
+  modname=$2
   [ -d "$src" ] || return 0
   find "$src" -type f ! -name .DS_Store ! -name '*.project-start' | sort >"$TMP/files"
   while IFS= read -r f; do
@@ -172,10 +191,18 @@ copy_tree() {
       KEPT=$((KEPT + 1))
       printf '%s\n' "$rel" >>"$TMP/new"
     elif grep -qxF -- "$rel" "$TMP/new"; then
-      # A file from another part of this run owns the path: keep both.
-      cp "$f" "$dest.project-start"
-      fixup "$rel" "$dest.project-start"
-      printf '%s\n' "$rel" >>"$TMP/conf"
+      # A file from another part of this run owns the path: add this module's text below it.
+      out=$dest
+      if grep -qxF -- "$rel" "$TMP/conf" && [ -f "$dest.project-start" ]; then
+        out=$dest.project-start
+      fi
+      cp "$f" "$TMP/extra"
+      fixup "$rel" "$TMP/extra"
+      {
+        printf '\n## %s additions\n\n' "$modname"
+        sed '1{/^# /d;}' "$TMP/extra"
+      } >>"$out"
+      MERGED=$((MERGED + 1))
     elif [ -e "$dest" ] || [ -L "$dest" ]; then
       if cmp -s "$f" "$dest"; then
         SAME=$((SAME + 1))
@@ -199,9 +226,9 @@ copy_tree() {
   done <"$TMP/files"
 }
 
-copy_tree "$ROOT/core/files"
+copy_tree "$ROOT/core/files" core
 for m in $MODLIST; do
-  copy_tree "$ROOT/modules/$m/files"
+  copy_tree "$ROOT/modules/$m/files" "$m"
 done
 
 mkdir -p "$TARGET/project"
@@ -219,9 +246,15 @@ TOTAL=$(wc -l <"$TMP/all" | tr -d ' ')
 } | grep -v '^$' | sort -u >"$TMP/mods"
 cp "$TMP/mods" "$TARGET/project/.modules"
 
+# Record the mode at the first install.
+[ -f "$MODEFILE" ] || printf '%s\n' "$MODE" >"$MODEFILE"
+
 printf 'Installed into: %s (merge mode: %s)\n' "$TARGET" "$MODE"
 printf '  new files: %s, already identical: %s, kept from an earlier run: %s\n' "$COPIED" "$SAME" "$KEPT"
 printf '  files listed in project/.installed: %s\n' "$TOTAL"
+if [ "$MERGED" -gt 0 ]; then
+  printf '  files two modules ship, the second added under "## <module> additions": %s\n' "$MERGED"
+fi
 
 if [ -s "$TMP/conf" ]; then
   printf '\nThese files already existed and were not changed. The new version sits beside each one.\nMerge by hand, then delete the .project-start file:\n'

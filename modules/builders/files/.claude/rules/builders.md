@@ -14,7 +14,7 @@ Single-agent coding is the default. Delegate only an independent slice: no share
 
 Claude Code hooks and settings do not bind another vendor's CLI, so setup is the only enforcement:
 
-- Strip credentials from the worktree before the tool starts. Run `git -C "$WT" config credential.helper ''`, where `WT` is the worktree path, so the machine's global helper cannot supply a token. Launch the tool with no token in its environment, for example `env -u GH_TOKEN -u GITHUB_TOKEN -u GITLAB_TOKEN -u SSH_AUTH_SOCK`. A push then fails.
+- Strip credentials from the worktree before the tool starts, where `WT` is the worktree path. Run `git -C "$WT" config extensions.worktreeConfig true`, then `git -C "$WT" config --worktree credential.helper ''`. The `--worktree` form matters: a plain `config` writes the `.git/config` that every worktree shares and strips the orchestrator's own helper. Launch the tool with no token variable in its environment and with `GIT_SSH_COMMAND=false`, because an SSH key without a passphrase still pushes: `env -u GH_TOKEN -u GITHUB_TOKEN -u GITLAB_TOKEN -u SSH_AUTH_SOCK GIT_SSH_COMMAND=false <tool>`. A push then fails.
 - Input from `/dev/null` and a deadline, because an open input hangs a run silently.
 - No flag that skips permission prompts.
 - Only the routine tasks listed in `AGENTS.md`.

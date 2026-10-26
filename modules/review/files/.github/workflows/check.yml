@@ -5,6 +5,9 @@ on:
   push:
     branches: ["{{DEFAULT_BRANCH}}"]
 
+permissions:
+  contents: read
+
 jobs:
   check:
     runs-on: ubuntu-latest

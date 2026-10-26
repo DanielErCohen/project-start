@@ -1,5 +1,4 @@
 # Module: privacy
-Trigger: personal data is in scope: users' or clients' details, or the owner pastes other people's data into sessions.
 Adds: `project/privacy.md`, `project/incident.md`.
 ## Append
 - CLAUDE.md | Personal data: read project/privacy.md before handling real user or client data; incidents follow project/incident.md.
@@ -8,4 +7,3 @@ Adds: `project/privacy.md`, `project/incident.md`.
 ## Manual
 - When the product sends telemetry, add the scrub test from `privacy.md` as a step in `scripts/check.sh`; otherwise delete the Telemetry section.
 - Add the client or user folder to `Read` deny rules in `.claude/settings.json` if it sits outside `private/`.
-Skip when: the project holds no personal data and the owner pastes none into sessions.

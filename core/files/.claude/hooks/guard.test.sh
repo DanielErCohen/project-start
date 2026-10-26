@@ -39,12 +39,54 @@ for r in "$repo_proj" "$repo_proj/project" "$repo_proj/other"; do
   git -C "$r" -c user.email=t@example.com -c user.name=t commit -q -m init
 done
 
-# The solo variant of the hook: the same file with ALLOW_DEFAULT_BRANCH_PUSH set to 1, as the install does for solo work.
+# Working copies of the hook. The installed guard is configured for its project, and the cases assume the shipped setup, so
+# the copies reset DEFAULT_BRANCH to main and SOLO_PATHS to project, and put back the default PROD_PATTERNS,
+# GENERATED_PATHS and MIGRATION_PATHS lines (a duplicate line is harmless). The project's own guard.sh is never changed.
 if ! grep -q '^ALLOW_DEFAULT_BRANCH_PUSH=[01]$' "$hook"; then echo "FAIL: ALLOW_DEFAULT_BRANCH_PUSH line not found in guard.sh"; exit 1; fi
+if ! grep -q '^block() {' "$hook"; then echo "FAIL: block() not found in guard.sh"; exit 1; fi
+cat > "$tmp/defaults.txt" <<'DEFAULTS'
+PROD_PATTERNS="$PROD_PATTERNS
+"'vercel +.*--prod(uction)?( |$)
+netlify +deploy +.*--prod(uction)?( |$)
+fly(ctl)? +deploy( |$)
+railway +(up|run|down)( |$)
+terraform +(apply|destroy)( |$)
+pulumi +(up|destroy)( |$)
+kubectl +.*(--context|--namespace|-n)[ =][^ ]*prod
+alembic +(upgrade|downgrade)( |$)
+prisma +migrate +deploy( |$)
+supabase +db +push( |$)
+glab +mr +merge( |$)
+glab +release( |$)
+gh +pr +merge +.*--admin( |$)
+cargo( +[+][^ ]+)? +publish( |$)
+[a-z]+ +deploy +.*--(prod|production)( |$)
+'
+GENERATED_PATHS="$GENERATED_PATHS
+"'*/package-lock.json
+*/pnpm-lock.yaml
+*/yarn.lock
+*/poetry.lock
+*/Cargo.lock
+*/Gemfile.lock
+*/generated/*
+*/__generated__/*
+*.generated.*
+'
+MIGRATION_PATHS="$MIGRATION_PATHS
+"'*/migrations/*
+*/db/migrate/*
+*/alembic/versions/*
+'
+DEFAULTS
+hook_base="$tmp/guard-base.sh"
+sed -e 's/^DEFAULT_BRANCH=.*/DEFAULT_BRANCH="main"/' -e 's/^SOLO_PATHS=.*/SOLO_PATHS="project"/' "$hook" |
+  awk -v f="$tmp/defaults.txt" '/^block\(\) \{/ { while ((getline l < f) > 0) print l } { print }' > "$hook_base"
+# The solo variant of the hook: the same file with ALLOW_DEFAULT_BRANCH_PUSH set to 1, as the install does for solo work.
 hook_off="$tmp/guard-team.sh"
 hook_on="$tmp/guard-solo.sh"
-sed 's/^ALLOW_DEFAULT_BRANCH_PUSH=[01]$/ALLOW_DEFAULT_BRANCH_PUSH=0/' "$hook" > "$hook_off"
-sed 's/^ALLOW_DEFAULT_BRANCH_PUSH=[01]$/ALLOW_DEFAULT_BRANCH_PUSH=1/' "$hook" > "$hook_on"
+sed 's/^ALLOW_DEFAULT_BRANCH_PUSH=[01]$/ALLOW_DEFAULT_BRANCH_PUSH=0/' "$hook_base" > "$hook_off"
+sed 's/^ALLOW_DEFAULT_BRANCH_PUSH=[01]$/ALLOW_DEFAULT_BRANCH_PUSH=1/' "$hook_base" > "$hook_on"
 hook=$hook_off
 hook_cur=$hook
 
@@ -322,6 +364,25 @@ edit 0 Write "$repo_feat/db/migrations/002_b.sql"
 edit 0 Write "$repo_feat/db/migrations/new/003_c.sql"
 edit 0 Write "$repo_feat/db/schema-notes.md"
 
+# Read: every env file other than the examples is blocked whatever its name; other files read freely
+edit 2 Read "$repo_feat/.env"
+edit 2 Read ".env.local"
+edit 2 Read "app/.env.preview"
+edit 2 Read ".env.ci"
+edit 2 Read "/work/proj/.env.backup"
+edit 2 Read ".envrc"
+edit 2 Read 'C:\proj\.env.backup'
+edit 0 Read "$repo_feat/.env.example"
+edit 0 Read ".env.sample"
+edit 0 Read "config/.env.template"
+edit 0 Read 'C:\proj\.env.example'
+edit 0 Read "docs/environment.md"
+edit 0 Read ".envelope.txt"
+edit 0 Read "$repo_feat/src/app.ts"
+edit 0 Read "$repo_feat/db/migrations/001_a.sql"
+edit 0 Read "web/pnpm-lock.yaml"
+edit 0 Read "src/generated/api.ts"
+
 narrow
 # Solo: the same hook with ALLOW_DEFAULT_BRANCH_PUSH=1 allows pushing the default branch and nothing else
 hook_cur=$hook_on
@@ -353,8 +414,29 @@ check ask "$m" 'git push origin main'
 check ask "$m" 'git push origin HEAD'
 check ask "$m" 'git push'
 
+# Solo with a remote: a migration committed on main but not pushed yet stays editable; once on origin/main it is blocked.
+# Without solo mode the local main counts as applied.
+repo_rem="$tmp/with-origin"
+git init -q --bare -b main "$tmp/origin.git"
+mkdir -p "$repo_rem/db/migrations"
+git -C "$repo_rem" init -q -b main
+printf 'create table a (id int);\n' > "$repo_rem/db/migrations/001_a.sql"
+git -C "$repo_rem" add db/migrations/001_a.sql
+git -C "$repo_rem" -c user.email=t@example.com -c user.name=t commit -q -m init
+git -C "$repo_rem" remote add origin "$tmp/origin.git"
+git -C "$repo_rem" push -q -u origin main 2>/dev/null
+printf 'create table b (id int);\n' > "$repo_rem/db/migrations/002_b.sql"
+git -C "$repo_rem" add db/migrations/002_b.sql
+git -C "$repo_rem" -c user.email=t@example.com -c user.name=t commit -q -m "add 002"
+hook_cur=$hook_on
+edit 0 Edit "$repo_rem/db/migrations/002_b.sql"
+edit 2 Edit "$repo_rem/db/migrations/001_a.sql"
+hook_cur=$hook
+edit 2 Edit "$repo_rem/db/migrations/002_b.sql"
+edit 2 Edit "$repo_rem/db/migrations/001_a.sql"
+
 narrow
-# Migration-apply and release commands ask the owner (item: new patterns)
+# Migration-apply and release commands ask the owner
 check ask "$f" 'alembic upgrade head'
 check ask "$f" 'alembic downgrade -1'
 check ask "$f" 'prisma migrate deploy'
@@ -526,7 +608,7 @@ blocked_out=$(printf '%s' '{"cwd":".","tool_input":{"command":"git push -f"}}' |
 # Fail closed: input that is not empty but yields no command or file path (a missing or broken JSON reader) is blocked;
 # empty input is not a tool call and passes
 for tool in $tools; do
-  for bad in 'not json at all' '{"tool_input":{}}' '{"tool_input":{"command":""}}' '{"tool_input":{"file_path":""}}' '{"tool_name":"Write"}'; do
+  for bad in 'not json at all' '{"tool_input":{}}' '{"tool_input":{"command":""}}' '{"tool_input":{"file_path":""}}' '{"tool_name":"Write"}' '{"tool_name":"Read"}'; do
     total=$((total + 1))
     printf '%s' "$bad" | GUARD_JSON_TOOL=$tool sh "$hook" >/dev/null 2>&1
     got=$?

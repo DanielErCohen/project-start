@@ -1,5 +1,5 @@
 #!/bin/sh
-# PreToolUse hook for Bash, Edit, Write and MultiEdit. It blocks, asks the owner, or allows (the three answers are below).
+# PreToolUse hook for Bash, Read, Edit, Write and MultiEdit. It blocks, asks the owner, or allows (the three answers are below).
 # Wired in .claude/settings.json as `sh "$CLAUDE_PROJECT_DIR/.claude/hooks/guard.sh"`, so it needs no exec bit.
 #
 # Two kinds of answer. Exit 2 with a message on stderr blocks the call: force pushes, --all and --mirror, deleting the
@@ -7,12 +7,14 @@
 # Bash reads of env files (cat, less, more, head, tail, source, `.`, grep) other than .env.example and its siblings, edits
 # to env files and generated files, and edits to a migration that already exists on the default branch. Exit 0 with a
 # PreToolUse "ask" JSON on stdout makes Claude Code ask the owner instead: the PROD_PATTERNS commands (deploys and
-# migration applies) and, when the default branch changes only by merge, pushes to or from it. Other readers (awk, sed,
-# cp) are not covered; the Read deny rules in settings.json cover the Read tool.
+# migration applies) and, when the default branch changes only by merge, pushes to or from it. A Read tool call gets only the
+# env-file check, so any .env* file other than the examples is blocked whatever its name. Other shell readers (awk, sed, cp)
+# are not covered; the Read deny rules in settings.json stay as a floor.
 #
 # Input: the tool call as JSON on stdin. JSON is read with jq when present, else python3 (only if it runs), else a plain
 # sed extraction that decodes \" \\ \n \t only. Set GUARD_JSON_TOOL=jq|python3|sed to force one. Non-empty input with no
-# readable command or file path is blocked, because a guard that cannot read a call cannot judge it (fail closed).
+# readable command or file path is blocked, because a guard that cannot read a call cannot judge it (fail closed). The hook
+# entry in settings.json sets onFailure block, so a crash of this script blocks the call too.
 # Parsing is best effort and is no full shell parser: heredoc bodies are dropped, `sh -c "..."` and `eval "..."` are unwrapped,
 # separators inside quotes are neutralised, and each simple command is checked on its own after leading wrappers (env,
 # time, sudo, VAR=value and similar) are stripped. Only a command that starts with the guarded word is judged, so
@@ -37,9 +39,9 @@ case $DEFAULT_BRANCH in "" | *"$PH"*) DEFAULT_BRANCH=main ;; esac
 
 # Commands that change a live environment, one extended regular expression per line, matched at the start of a simple
 # command (an npx, pnpm exec, yarn or similar runner prefix is allowed). A match asks the owner; it does not block. Start
-# each line with a literal command word, because the early exit reads the first word of each line. Edit this list for the
-# project. The block below covers common hosted deploys and migration applies and is active. Delete a line when the stack
-# never uses that tool.
+# each line with a literal command word, because the early exit reads the first word of each line. The block below covers
+# common hosted deploys and migration applies and is active: add lines for the project and keep the defaults, which the
+# test file relies on.
 # > ADAPT: add the other commands that change a live environment in this stack. Examples, uncomment what applies:
 #   Node or web hosting:  firebase +deploy
 #   Database or backend:  supabase +(link|projects +delete)
@@ -75,7 +77,7 @@ cargo( +[+][^ ]+)? +publish +.*--dry-run( |$)
 ENV_OK='.env.example .env.sample .env.template'
 
 # Generated files: a path glob per line, matched against the full path. Change the source and regenerate instead.
-# > ADAPT: list this project's generated outputs. Examples: Node or TypeScript: */src/generated/* */*.d.ts.map;
+# > ADAPT: add this project's generated outputs, and keep the defaults. Examples: Node or TypeScript: */src/generated/* */*.d.ts.map;
 # Python: */*_pb2.py */_version.py; mobile: */Pods/* */build/generated/*; API clients: */openapi/generated/*.
 GENERATED_PATHS='
 */package-lock.json
@@ -90,7 +92,7 @@ GENERATED_PATHS='
 '
 
 # Committed migrations: a path glob per line. Editing one that git already tracks is blocked; a new, untracked file is fine.
-# > ADAPT: the folders where this project keeps schema migrations. Examples: */migrations/*.sql, */db/migrate/*.rb,
+# > ADAPT: add the folders where this project keeps schema migrations, and keep the defaults. Examples: */migrations/*.sql, */db/migrate/*.rb,
 # */alembic/versions/*.py, */prisma/migrations/*/migration.sql.
 MIGRATION_PATHS='
 */migrations/*
@@ -150,17 +152,32 @@ get_cwd() {
 }
 
 # 0 when the file already exists on the default branch (local or origin), so a migration written on the working branch
-# stays editable until it merges.
+# stays editable until it merges. In solo mode with an origin branch, only origin counts.
 on_default_branch() {
   p=$1
   case $p in /* | ?:/*) ;; *) p="$(get_cwd)/$p" ;; esac
   dir=${p%/*}
   [ -d "$dir" ] || return 1
   prefix=$(git -C "$dir" rev-parse --show-prefix 2>/dev/null) || return 1
-  for ref in "$DEFAULT_BRANCH" "origin/$DEFAULT_BRANCH"; do
+  refs="$DEFAULT_BRANCH origin/$DEFAULT_BRANCH"
+  # Solo: local default-branch commits are not pushed yet, so a migration committed minutes ago is still editable. When the
+  # remote branch exists, only it counts as applied.
+  if [ "$ALLOW_DEFAULT_BRANCH_PUSH" = 1 ] && git -C "$dir" rev-parse --verify -q "refs/remotes/origin/$DEFAULT_BRANCH" >/dev/null 2>&1; then
+    refs="origin/$DEFAULT_BRANCH"
+  fi
+  for ref in $refs; do
     git -C "$dir" cat-file -e "$ref:$prefix${p##*/}" 2>/dev/null && return 0
   done
   return 1
+}
+
+# A Read tool call: only env files are judged.
+check_read() {
+  path=$(printf '%s' "$1" | tr '\\' '/')
+  base=${path##*/}
+  if is_secret_env "$base"; then
+    block "$base holds secrets. Read .env.example instead; the owner sets real values."
+  fi
 }
 
 check_file() {
@@ -428,6 +445,7 @@ quick_hit() {
 # An empty call is not a tool call.
 [ -z "$(printf '%s' "$input" | tr -d ' \t\r\n')" ] && exit 0
 
+tool_name=$(json_get tool_name)
 cmd=$(json_get tool_input.command)
 file=$(json_get tool_input.file_path)
 
@@ -435,7 +453,9 @@ if [ -z "$cmd" ] && [ -z "$file" ]; then
   block "no command or file path could be read from the tool call, so the guard cannot check it. Install jq or a working python3 (or set GUARD_JSON_TOOL=sed), then retry."
 fi
 
-[ -n "$file" ] && check_file "$file"
+if [ -n "$file" ]; then
+  if [ "$tool_name" = Read ]; then check_read "$file"; else check_file "$file"; fi
+fi
 if [ -n "$cmd" ] && quick_hit "$cmd"; then
   check_bash "$cmd"
 fi

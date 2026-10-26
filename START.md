@@ -10,9 +10,7 @@ For the agent that was told to start a project from this folder. Read it fully, 
 
 ## Stance
 
-- You are a peer. Name any premise you cannot verify and what would settle it. If the owner pushes back and you change your view, name what changed it. If they overrule you with no new information on a decision that is theirs, log it in `project/decisions.md` and go on.
 - Technical points are yours: decide, with the reason in one line.
-- Plain words, bottom line first, one screen; gloss a term at first use.
 - Ask before anything irreversible or that reaches another person: a remote, a push, accounts, spending, messages. Local installs are cheap: do them and report.
 
 ## Built-ins this flow uses
@@ -32,7 +30,7 @@ Exit: a list with source and state (found, missing, unclear) per field.
 **3. Interview.** Map any pasted document onto the fields (see "Bring your own questionnaire"). Ask the "Default: none" fields first, one at a time, then field 11, so the remote question comes early. Park what the owner cannot answer yet: the default stays and the item goes to the open questions in `project/decisions.md`. Check dictated names, numbers and dates against recon. Stop when the remaining defaults are good enough.
 Exit: all 12 fields answered or defaulted, defaults listed.
 
-**4. Challenge.** Raise each red flag once, with the one fact that would settle it. Settle the merge mode (default `solo`: push on the default branch, no pull requests) and the decision rights.
+**4. Challenge.** Raise each red flag once, with the one fact that would settle it. When the owner overrules you with no new information on a decision that is theirs, log it in `project/decisions.md` and go on. Settle the merge mode (default `solo`: push on the default branch, no pull requests) and the decision rights.
 Exit: every flag raised once, overruling logged, merge mode agreed.
 
 **5. Propose.** Stay in plan mode. One screen, bottom line first:

@@ -3,10 +3,11 @@
 # Usage: sh tools/verify.sh --target DIR     (or: sh tools/verify.sh DIR)
 #
 # Runs mechanical checks over the files listed in DIR/project/.installed and
-# prints PASS, FAIL or SKIP per check: leftover tokens, ADAPT callouts and
+# prints PASS, FAIL, SKIP or NOTE per check: leftover tokens, ADAPT callouts and
 # <placeholders>, paths, keys, links, shell syntax, the hook test, JSON, the
-# push flag against the recorded merge mode, and the Append lines of each
-# installed module. Exit code 1 when any check fails.
+# push flag and the git rule against the recorded merge mode, and the Append
+# lines of each installed module (a line changed or removed on purpose is only a
+# NOTE). Exit code 1 when any check fails.
 # POSIX sh, no network. Works with GNU and BSD tools and Git Bash.
 
 set -u
@@ -80,6 +81,21 @@ report() {
   fi
 }
 
+# note PASSNAME NOTENAME FILE: NOTE with the lines in FILE, or PASS when FILE is empty. A note never fails the run.
+note() {
+  CHECKS=$((CHECKS + 1))
+  if [ -s "$3" ]; then
+    printf 'NOTE  %s\n' "$2"
+    head -n 10 "$3" | sed 's/^/        /'
+    n=$(wc -l <"$3" | tr -d ' ')
+    if [ "$n" -gt 10 ]; then
+      printf '        ... %s more\n' $((n - 10))
+    fi
+  else
+    printf 'PASS  %s\n' "$1"
+  fi
+}
+
 skip() {
   CHECKS=$((CHECKS + 1))
   printf 'SKIP  %s (%s)\n' "$1" "$2"
@@ -101,21 +117,34 @@ scan "no leftover > ADAPT callout" '^(# )?> ADAPT'
 scan "no absolute home paths" '(/Users/|/home/)[A-Za-z0-9_.-]|[A-Za-z]:\\Users\\'
 scan "no key-shaped strings" 'sk-[A-Za-z0-9_-]{20,}|sk_(live|test)_[A-Za-z0-9]{16,}|github_pat_[A-Za-z0-9_]{20,}|gh[pousr]_[A-Za-z0-9]{36}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35}|xox[abprs]-[A-Za-z0-9-]{10,}|-----BEGIN [A-Z ]*PRIVATE KEY-----'
 
-# Placeholders such as <amount per month> in installed project/ files.
+# Placeholders such as <amount per month> or <Item> in installed project/ files and CLAUDE.md. HTML tags and <https:...>
+# links are not placeholders, and files whose name starts with an underscore are templates that stay as they are.
 : >"$TMP/out"
-grep '^project/.*\.md$' "$TMP/present" >"$TMP/projmd"
+grep -E '^project/.*\.md$|^CLAUDE\.md$' "$TMP/present" | grep -v '/_[^/]*$' >"$TMP/projmd"
 while IFS= read -r rel; do
-  grep -noE '<[a-z][a-z0-9-]*( [a-z][a-z0-9-]*)*>' -- "$rel" 2>/dev/null |
-    grep -vE ':<(br|p|b|i|em|strong|code|pre|kbd|details|summary|sup|sub|img|a|hr|ul|ol|li|div|span|table|tr|td|th|h[1-6])>$' |
+  grep -noE '<[A-Za-z][^<>]*>' -- "$rel" 2>/dev/null |
+    grep -vE '^[0-9]+:<(br|p|b|i|em|strong|code|pre|kbd|details|summary|sup|sub|img|a|hr|ul|ol|li|div|span|table|tr|td|th|h[1-6])( [^<>]*)?/?>$' |
+    grep -vE '^[0-9]+:<https?:' |
     sed "s|^|$rel:|" >>"$TMP/out"
 done <"$TMP/projmd"
-report "no leftover <placeholder> in project/ files" "$TMP/out"
+report "no leftover <placeholder> in project/ files and CLAUDE.md" "$TMP/out"
 
-# The push flag in the guard matches the merge mode in working-agreement.md.
+# The merge mode: the one in working-agreement.md, else the one recorded in project/.mode.
 MODEWORD='(solo|orchestrator|human-review|issues-only)'
-if grep -qx '.claude/hooks/guard.sh' "$TMP/present" && grep -qx 'project/working-agreement.md' "$TMP/present"; then
+mode=""
+if grep -qx 'project/working-agreement.md' "$TMP/present"; then
   mode=$(grep -iE 'in force' project/working-agreement.md | grep -oE "\`$MODEWORD\`" | head -n 1 | tr -d '\`')
   [ -n "$mode" ] || mode=$(grep -iE 'merge mode' project/working-agreement.md | grep -oE "\`$MODEWORD\`" | head -n 1 | tr -d '\`')
+fi
+if [ -z "$mode" ] && [ -f project/.mode ]; then
+  mode=$(tr -d '\r' <project/.mode | head -n 1 | tr -d ' ')
+fi
+if [ -n "$mode" ]; then
+  if [ "$mode" = solo ]; then want=1; else want=0; fi
+fi
+
+# The push flag in the guard matches the merge mode.
+if grep -qx '.claude/hooks/guard.sh' "$TMP/present"; then
   flag=$(grep -E '^ALLOW_DEFAULT_BRANCH_PUSH=[01]$' .claude/hooks/guard.sh | head -n 1 | sed 's/.*=//')
   : >"$TMP/out"
   if [ -z "$mode" ]; then
@@ -124,12 +153,26 @@ if grep -qx '.claude/hooks/guard.sh' "$TMP/present" && grep -qx 'project/working
     printf 'no ALLOW_DEFAULT_BRANCH_PUSH=0 or =1 line in .claude/hooks/guard.sh\n' >"$TMP/out"
     report "guard push flag matches the merge mode" "$TMP/out"
   else
-    if [ "$mode" = solo ]; then want=1; else want=0; fi
     [ "$flag" = "$want" ] || printf 'merge mode %s needs ALLOW_DEFAULT_BRANCH_PUSH=%s, the guard has %s\n' "$mode" "$want" "$flag" >"$TMP/out"
     report "guard push flag matches the merge mode" "$TMP/out"
   fi
 else
-  skip "guard push flag matches the merge mode" "guard.sh or working-agreement.md not installed"
+  skip "guard push flag matches the merge mode" "guard.sh not installed"
+fi
+
+# The git rule matches the merge mode: its first line names solo or review.
+if grep -qx '.claude/rules/git.md' "$TMP/present"; then
+  : >"$TMP/out"
+  if [ -z "$mode" ]; then
+    skip "git rule matches the merge mode" "no merge mode recorded"
+  else
+    if [ "$mode" = solo ]; then gitwant='# Git (solo)'; else gitwant='# Git (review)'; fi
+    gitfirst=$(head -n 1 .claude/rules/git.md | tr -d '\r')
+    [ "$gitfirst" = "$gitwant" ] || printf 'merge mode %s needs a git rule that starts "%s", the file starts "%s"\n' "$mode" "$gitwant" "$gitfirst" >"$TMP/out"
+    report "git rule matches the merge mode" "$TMP/out"
+  fi
+else
+  skip "git rule matches the merge mode" "no .claude/rules/git.md installed"
 fi
 
 # Every ## Append line of each installed module is present.
@@ -181,10 +224,11 @@ if [ -f project/.modules ]; then
         .gitignore | */.gitignore) want=$t ;;
         *) want="- $t" ;;
       esac
-      tr -d '\r' <"$p" | grep -qxF -- "$want" || printf '%s (module %s): missing "%s"\n' "$p" "$m" "$want" >>"$TMP/out"
+      tr -d '\r' <"$p" | grep -qxF -- "$want" || printf '%s (module %s): not found as installed: "%s"\n' "$p" "$m" "$want" >>"$TMP/out"
     done <"$TMP/append"
   done <"$TMP/mods"
-  report "module Append lines are present ($NAPP checked)" "$TMP/out"
+  # A line the agent filled, adapted or deleted on purpose is not a failure.
+  note "module Append lines are present ($NAPP checked)" "module Append lines not found as installed: changed or removed on purpose?" "$TMP/out"
 else
   skip "module Append lines are present" "no project/.modules (installed by an older version)"
 fi

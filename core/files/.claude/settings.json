@@ -67,11 +67,12 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Bash|Edit|Write|MultiEdit",
+        "matcher": "Bash|Read|Edit|Write|MultiEdit",
         "hooks": [
           {
             "type": "command",
-            "command": "sh \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard.sh\""
+            "command": "sh \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard.sh\"",
+            "onFailure": "block"
           }
         ]
       }

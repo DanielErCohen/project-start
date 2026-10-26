@@ -2,8 +2,6 @@
 
 Twelve fields every project answers, filled from recon, a pasted document, chat answers or defaults. Ask one field at a time, in plain words, skipping any answered. A default is used when the owner says "ok"; "Default: none" means ask and wait.
 
-A challenge has four parts: your assessment as a fact, the strongest counter, one recommendation, and what would change your mind. Raise one on a red flag, once per area; say "sound" in one line when a checkable claim holds. When the owner repeats a position with no new information, log it in `project/decisions.md` and go on: product, money and reach are theirs.
-
 ## Core fields
 
 **1. Name and one line**
@@ -92,7 +90,7 @@ A challenge has four parts: your assessment as a fact, the strongest counter, on
 
 ## Module triggers
 
-Install a module when the answers match; each `MODULE.md` repeats its trigger.
+Install a module when the answers match.
 
 | Module | Install when |
 |---|---|
