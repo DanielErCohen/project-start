@@ -1,0 +1,14 @@
+# Secrets: real env files stay local; the example is committed
+.env*
+!.env.example
+!.env.sample
+!.env.template
+
+# Machine-specific Claude Code settings
+.claude/settings.local.json
+
+# Anything that must sit locally and never be committed (client files, exports, scratch data)
+private/
+
+# OS files
+.DS_Store

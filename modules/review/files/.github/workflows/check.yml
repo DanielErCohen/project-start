@@ -1,0 +1,17 @@
+# Runs the same local gate a developer runs, so branch protection has a check to require.
+name: check
+on:
+  pull_request:
+  push:
+    branches: ["{{DEFAULT_BRANCH}}"]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # > ADAPT: add the stack's setup step here (for example actions/setup-node or actions/setup-python), then delete this line.
+      - name: Gate
+        run: sh scripts/check.sh

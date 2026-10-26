@@ -1,0 +1,66 @@
+name: test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Shell scripts parse
+        run: |
+          status=0
+          for f in $(find . -name '*.sh' -not -path './.git/*'); do
+            sh -n "$f" || { echo "syntax error in $f"; status=1; }
+          done
+          exit $status
+
+      - name: Guard hook test
+        run: sh core/files/.claude/hooks/guard.test.sh
+
+      - name: Install and verify smoke runs
+        run: |
+          set -eu
+          # smoke NAME MODE INSTALL-ARGS...: install, then verify. Verify may
+          # fail only on its "no leftover ..." checks (tokens, ADAPT callouts,
+          # placeholders), which an unfilled install always trips.
+          smoke() {
+            name=$1
+            mode=$2
+            shift 2
+            dir=$(mktemp -d)/$name
+            out=$(mktemp)
+            echo "== $name (mode $mode) =="
+            sh tools/install.sh --target "$dir" --mode "$mode" "$@"
+            sh tools/verify.sh --target "$dir" >"$out" 2>&1 || true
+            cat "$out"
+            bad=$(grep '^FAIL' "$out" | grep -v '^FAIL  no leftover ' || true)
+            if [ -n "$bad" ]; then
+              echo "unexpected verify failures:"
+              echo "$bad"
+              exit 1
+            fi
+            grep -q '^PASS  guard push flag matches the merge mode' "$out" || { echo "flag check did not pass"; exit 1; }
+            grep -q '^PASS  module Append lines are present' "$out" || { echo "append check did not pass"; exit 1; }
+            if [ "$mode" = solo ]; then want=1; else want=0; fi
+            grep -qx "ALLOW_DEFAULT_BRANCH_PUSH=$want" "$dir/.claude/hooks/guard.sh" || { echo "guard flag is not $want"; exit 1; }
+            grep -q "\`$mode\` is in force" "$dir/project/working-agreement.md" || { echo "mode not written to working-agreement.md"; exit 1; }
+            if [ -d "$dir/.claude/rules" ] && [ -f "$dir/.claude/rules/git.md" ]; then
+              [ ! -e "$dir/.claude/rules/git-solo.md" ] && [ ! -e "$dir/.claude/rules/git-review.md" ] || { echo "both git rules installed"; exit 1; }
+            fi
+            # A second run changes nothing, and a deleted file stays deleted.
+            cp "$dir/project/.installed" "$out.list"
+            sum1=$(cat "$dir/CLAUDE.md" "$dir/project/working-agreement.md" | cksum)
+            rm "$dir/project/GLOSSARY.md"
+            sh tools/install.sh --target "$dir" --mode "$mode" "$@" >/dev/null
+            cmp "$dir/project/.installed" "$out.list" || { echo ".installed changed on re-run"; exit 1; }
+            [ ! -e "$dir/project/GLOSSARY.md" ] || { echo "deleted file came back"; exit 1; }
+            sum2=$(cat "$dir/CLAUDE.md" "$dir/project/working-agreement.md" | cksum)
+            [ "$sum1" = "$sum2" ] || { echo "re-run changed CLAUDE.md or working-agreement.md"; exit 1; }
+          }
+          smoke solo-code solo --code
+          smoke nocode-privacy solo --modules privacy,no-code
+          smoke team-review human-review --code --modules review,team,live-product,privacy

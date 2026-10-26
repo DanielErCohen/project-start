@@ -1,0 +1,10 @@
+# Rename to .gitlab-ci.yml on GitLab. Runs the same local gate a developer runs.
+# > ADAPT: set the image to one that holds the stack's tools, then delete this line.
+check:
+  image: alpine:3
+  variables:
+    GIT_DEPTH: "0"
+  before_script:
+    - apk add --no-cache git
+  script:
+    - sh scripts/check.sh
