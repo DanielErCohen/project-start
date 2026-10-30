@@ -1,6 +1,6 @@
 # project-start
 
-A starter that an agent installs into a new or existing project after it interviews and challenges you. It supplies what Claude Code lacks: the project's facts, who decides what, what waits on you, checks, guards and hard-won rules.
+A starter that an agent installs into a new or existing project after it interviews and challenges you. It supplies what Claude Code lacks: the project's facts, who decides what, what waits on you, checks, guards and rules, each traced to a failure in [LEARNINGS.md](LEARNINGS.md).
 
 Distilled from building a live consumer app, a B2B tool I later stopped and a mobile app in progress, with Claude doing the build.
 
@@ -12,7 +12,7 @@ Distilled from building a live consumer app, a B2B tool I later stopped and a mo
 Start a project from <path>/project-start/START.md
 ```
 
-Needs git 2.28 or later, and Git Bash on Windows. On an existing repo the installer never overwrites: it writes `<file>.project-start` beside yours to merge. START.md is for Claude Code, not the Claude app.
+Needs git 2.28 or later, and Git Bash on Windows. On an existing repo the installer never overwrites: it writes `<file>.project-start` beside yours to merge. START.md is for Claude Code only.
 
 **In the Claude app, no terminal.** Paste this into a new chat. It interviews and challenges you, then returns `brief.md`, `owner.md` and, for personal data, a privacy block. Keep them in a Claude Project's files or a notes or docs app; the Claude Code path installs the rest later.
 
@@ -23,7 +23,9 @@ Never take a bare "ok" on question 8: ask what data, whose, and which tool may s
 Then return markdown blocks. brief.md: what it is, who it is for, what it does not do, each belief with an "it is wrong if" line, kill lines with a number, a read date and a decision per outcome (one review date for a learning project). owner.md: each item waiting on me as a plain title expanded into every step with a default, and where each account and secret lives. When personal data is in scope, a privacy block: the data, whose it is, which tools may see it, what is never pasted.
 ```
 
-**By hand.** Answer the twelve fields in [QUESTIONS.md](QUESTIONS.md), pick modules from its trigger table, then run:
+**By hand.** Answer the twelve fields in [QUESTIONS.md](QUESTIONS.md), pick modules from its trigger table.
+
+From the project-start folder:
 
 ```text
 sh tools/install.sh --target ~/my-project --mode solo --code --modules privacy

@@ -1,6 +1,6 @@
 # Start
 
-For the agent that was told to start a project from this folder. Read it fully, then work the phases in order. The three duties apply from your first message to your last.
+For the agent that was told to start a project from this folder. Read it fully, then work the phases in order.
 
 ## Three duties
 
