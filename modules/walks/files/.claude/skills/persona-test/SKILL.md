@@ -1,6 +1,6 @@
 ---
 name: persona-test
-description: Code-blind synthetic users drive the real product through realistic journeys; a synthesis pass re-checks and tiers their findings. Use when the owner asks for a persona test, a synthetic UX test, or how a flow feels to a user.
+description: Code-blind simulated users drive the real product through realistic journeys; a synthesis pass re-checks and tiers their findings. Use when the owner asks for a persona test, a simulated UX test, or how a flow feels to a user.
 argument-hint: [personas or journeys; empty for all]
 ---
 # Persona test
