@@ -9,7 +9,7 @@ The definition every other file serves. Where another file disagrees, this one w
 ## Who it is for
 
 - **First user:** <one named kind of person>
-- **Behaviour that defines them:** *what they do today, leaving demographics out.*
+- **Behavior that defines them:** *what they do today, leaving demographics out.*
 - **Not for now:** <who is deliberately out>
 
 ## What it does

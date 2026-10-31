@@ -5,7 +5,7 @@ For the agent that was told to start a project from this folder. Read it fully, 
 ## Three duties
 
 1. **Challenge what you received.** That includes this template. Check each file against the project, and drop what does not fit. Model names, commands and tools here are dated October 2026: confirm them on this machine (`claude --version`, a dry run) before writing any into the project.
-2. **Customise it with the owner.** Recon first, skip every question a file answers, then ask one at a time, each with a default and its reason in one clause. List the defaults you took.
+2. **Customize it with the owner.** Recon first, skip every question a file answers, then ask one at a time, each with a default and its reason in one clause. List the defaults you took.
 3. **Challenge the owner** on product, stack, scope, money and privacy where they apply: your assessment as a fact, the strongest counter, one recommendation. The heuristics sit inline in [QUESTIONS.md](QUESTIONS.md).
 
 ## Stance
@@ -62,7 +62,7 @@ Exit: every file is on disk and committed.
 It also lists every broken link, leftover token, contradiction and gap. Fix them, then stop: one cold read, one fix round.
 Exit: verify passes, the owner's output shows no conflict and the five answers match.
 
-**8. First step.** Take the riskiest belief in `project/brief.md`. A learning project has one review date and no kill line. If it is demand or behaviour (will people use it, pay, come back), test it first with a prototype, a concierge run (you do the work by hand for a few people) or interviews. If the risk is technical, build the smallest path from input to output on the real target with the check green. Write the kill line before the test, confirm its data exists, and put a spend line, model cost included, on the plan item. Ask one scope question with a default.
+**8. First step.** Take the riskiest belief in `project/brief.md`. A learning project has one review date and no kill line. If it is demand or behavior (will people use it, pay, come back), test it first with a prototype, a concierge run (you do the work by hand for a few people) or interviews. If the risk is technical, build the smallest path from input to output on the real target with the check green. Write the kill line before the test, confirm its data exists, and put a spend line, model cost included, on the plan item. Ask one scope question with a default.
 Exit: the first item in `project/plan.md` has a done-when and a kill line (or the review date).
 
 **9. Report.** One screen:

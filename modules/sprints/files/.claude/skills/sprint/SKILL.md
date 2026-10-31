@@ -27,7 +27,7 @@ The main session codes the lanes in turn. With review, cut each branch from `{{D
 
 Run lanes in parallel only when they share no file and no stored data, each as a subagent with `isolation: worktree` and `model: sonnet`, whose brief restates the must-hold rules.
 
-Per lane: gate, `/code-review` (on the unpushed commits in solo mode), merge per the merge mode or push in solo mode, update the status table. After the last merge run the full gate on `{{DEFAULT_BRANCH}}`, since a clean textual merge can still break behaviour.
+Per lane: gate, `/code-review` (on the unpushed commits in solo mode), merge per the merge mode or push in solo mode, update the status table. After the last merge run the full gate on `{{DEFAULT_BRANCH}}`, since a clean textual merge can still break behavior.
 
 ## Close
 

@@ -16,7 +16,7 @@ Run `sh scripts/check.sh` before you open a pull request. It runs the same steps
 ## The pull request
 
 - One change per pull request, with a test that fails without it.
-- A change to behaviour adds a line under "Unreleased" in `CHANGELOG.md`, in the user's words.
+- A change to behavior adds a line under "Unreleased" in `CHANGELOG.md`, in the user's words.
 - The description says what changed, why and how you checked it. Link the issue.
 - Keep commit subjects imperative and about 50 characters.
 

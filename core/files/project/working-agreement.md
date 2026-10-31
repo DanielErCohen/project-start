@@ -42,10 +42,10 @@ A grant of authority is written here with scope and date, because a chat grant i
 
 | Job | Model | Effort | Input / output |
 |---|---|---|---|
-| Orchestration and coding | Opus 5.5 | medium, high for hard work | $4 / $20 |
+| Planning and orchestration | Opus 5.5 | medium, high for hard work | $4 / $20 |
+| Coding, and parallel or routine work | Sonnet 5.5 | medium | $2 / $10 |
+| Review, in a fresh context | Sonnet 5.5 | high | $2 / $10 |
 | Recon and checkable subtasks | Haiku 5.5 | medium | $0.10 / $0.50 |
-| Cost-bounded parallel or routine work | Sonnet 5.5 | medium | $2 / $10 |
-| Review, in a fresh context | Opus 5.5 | high | $4 / $20 |
 | Escalation: an owner ask, logged in [decisions.md](decisions.md) | Fable 5.1, when Opus at high effort falls short | high | $10 / $50 |
 
 - Set `model` and `effort` in every agent definition.
@@ -55,7 +55,7 @@ A grant of authority is written here with scope and date, because a chat grant i
 ## How one piece of work flows
 
 1. **Start.** Read [owner.md](owner.md), [plan.md](plan.md) and [decisions.md](decisions.md).
-2. **Frame.** A small fix starts as the problem, the expected behaviour and one check that proves it. Write a spec only when an interface, stored data or money changes. Use plan mode when the change takes more than a sentence to describe.
+2. **Frame.** A small fix starts as the problem, the expected behavior and one check that proves it. Write a spec only when an interface, stored data or money changes. Use plan mode when the change takes more than a sentence to describe.
 3. **Work.** One session plans and does the work. Subagents take read-only recon and independent slices, so no two writers share a file.
 4. **Check.** Run the checks and read the real output.
 5. **Review.** One review in a fresh context or by a person who did not write the change, after the checks pass. A second round only re-checks a fix; stop at two. Payments, sign-in, personal data and stored data also get a security review and a review by a different model family or a domain expert.

@@ -11,7 +11,7 @@ The words this project uses, in plain sentences. Add a term when a file needs on
 - **Belief:** something the project rests on, written with the result that would prove it wrong.
 - **Kill line:** a result, written before a test, that ends or changes the project when it fails.
 - **Grade:** how well a plan item is backed: validated, bet or assumption.
-- **Stage:** how far a claim has travelled: proposed, delivered, reported, measured or verified.
+- **Stage:** how far a claim has traveled: proposed, delivered, reported, measured or verified.
 - **Recon:** quick fact-finding, such as reading files or searching, done by a cheap model.
 - **Mode:** who accepts finished work: `solo`, `orchestrator`, `human-review` or `issues-only`; see [working-agreement.md](working-agreement.md).
 - **Review:** a check by a fresh session, or a person, that did not write the change.

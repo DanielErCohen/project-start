@@ -15,7 +15,7 @@ paths: ["**/*.test.*", "**/*_test.*", "**/test_*.*", "tests/**", "test/**", "spe
 | Anything that computes a number a person sees | Boundaries: zero, exact edges, maximums, past the end |
 | New or changed schema or access rule | A test against the real data layer that proves the guard holds |
 
-- Name a test after the module and the behaviour: what it does, when.
+- Name a test after the module and the behavior: what it does, when.
 - Mock only external boundaries (the database client, the network, the clock), at the repo's own interface, which survives an SDK swap. A mock keeps a spy that asserts the arguments, because without it deleting the call passes every test.
 - Never weaken an assertion to make a test pass: fix the code, or state why the expectation changed.
-- Assert observable behaviour with explicit properties. No snapshots for domain logic and no assertions on call counts or private state, because they break on harmless refactors.
+- Assert observable behavior with explicit properties. No snapshots for domain logic and no assertions on call counts or private state, because they break on harmless refactors.

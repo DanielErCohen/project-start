@@ -24,7 +24,7 @@ Run every step in the brief against the real target, and run each check for real
 - About 30 judged steps per run; one walker at a time.
 - Act on elements by name or selector, and capture a vanishing message in the same call as the action.
 - Quoted text is exact; a different string is FAIL. A value you cannot read is WARN.
-- Use only seeded data the brief names. Behaviour on its by-design list is an observation.
+- Use only seeded data the brief names. Behavior on its by-design list is an observation.
 
 ## Report
 

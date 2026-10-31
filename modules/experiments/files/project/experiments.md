@@ -1,6 +1,6 @@
 # Experiments
 
-How {{PROJECT_NAME}} tests a change and reports a result. Decisions are written before the data exists, because a criterion written afterwards is fitted to the data.
+How {{PROJECT_NAME}} tests a change and reports a result. Decisions are written before the data exists, because a criterion written afterward is fitted to the data.
 
 ## Evidence stages
 

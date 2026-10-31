@@ -30,7 +30,7 @@ Every item carries one grade, so a bet is never mistaken for a fact.
 
 ## Next
 
-*In build order. The first item tests the riskiest belief in [brief.md](brief.md): a prototype, a hand-run version or interviews when the risk is demand or behaviour, the smallest end-to-end build only when the risk is technical.*
+*In build order. The first item tests the riskiest belief in [brief.md](brief.md): a prototype, a hand-run version or interviews when the risk is demand or behavior, the smallest end-to-end build only when the risk is technical.*
 
 1. **<Item>.** Grade: <grade>. Done when: <proof>.
 

@@ -4,7 +4,7 @@ What {{PROJECT_NAME}} promises, how it answers users, and how it checks the prom
 
 ## Flow mode
 
-The default queue is one ready item at a time: each cycle takes the top ready item, ships it, and idles when none is ready, because small steps show which change caused a problem. An item is ready when it has the problem and expected behaviour, one check that proves it, what is out of scope, and file and line notes from a read of the code.
+The default queue is one ready item at a time: each cycle takes the top ready item, ships it, and idles when none is ready, because small steps show which change caused a problem. An item is ready when it has the problem and expected behavior, one check that proves it, what is out of scope, and file and line notes from a read of the code.
 
 ## Commitments register
 

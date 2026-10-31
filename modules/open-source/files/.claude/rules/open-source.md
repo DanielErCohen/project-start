@@ -16,7 +16,7 @@
 ## Versions and changelog
 
 - Version `MAJOR.MINOR.PATCH`; the rules for 0.x and for what breaks a command-line tool are in `docs/releasing.md`.
-- A pull request that changes behaviour adds a line under "Unreleased" in `CHANGELOG.md`, in the user's words. A release moves those lines under the version and date.
+- A pull request that changes behavior adds a line under "Unreleased" in `CHANGELOG.md`, in the user's words. A release moves those lines under the version and date.
 - Tag releases from `{{DEFAULT_BRANCH}}` after the checks pass.
 
 ## Publishing

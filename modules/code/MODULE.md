@@ -7,7 +7,7 @@ Adds: `scripts/check.sh`, `.claude/rules/git.md` (from `git-solo.md` in solo mod
 - project/working-agreement.md | Work: a subagent that edits runs with `isolation: worktree`, because two writers in one working copy corrupt each other.
 - project/working-agreement.md | Check: run `sh scripts/check.sh`. It stops at the first failure and fails when no step has a command.
 - project/working-agreement.md | Merge: follows the mode in force; the rules for each mode are in `.claude/rules/git.md`.
-- project/working-agreement.md | Deploy: the owner decides, separately from merge, because a merged change is not live until deployed. Check the result afterwards.
+- project/working-agreement.md | Deploy: the owner decides, separately from merge, because a merged change is not live until deployed. Check the result afterward.
 - project/working-agreement.md | Devices: a private remote makes the project reachable from a phone and a cloud session. Ask early, and create it private after one yes.
 ## Manual
 - Fill the commands in `scripts/check.sh` for the stack. The gate fails until at least one step has a command.

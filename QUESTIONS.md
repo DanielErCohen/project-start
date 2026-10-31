@@ -36,7 +36,7 @@ Twelve fields every project answers, filled from recon, a pasted document, chat 
 - Ask: How many hours a week do you have, by what date do you want something real in someone's hands, and what is your monthly ceiling for tools, services and model usage? Give numbers.
 - Why: scope must fit the hours; a ceiling lets the agent decide cheap choices.
 - Default: none.
-- Challenge: convert the scope to work sessions; if v1 needs more than the hours allow, show the arithmetic and offer the smaller scope. "What I already pay" is not a number. Compare the stack's recurring costs, model usage included, with the ceiling. "Monetise later" needs a named payer; without one it is a learning project, a fine answer.
+- Challenge: convert the scope to work sessions; if v1 needs more than the hours allow, show the arithmetic and offer the smaller scope. "What I already pay" is not a number. Compare the stack's recurring costs, model usage included, with the ceiling. "Monetize later" needs a named payer; without one it is a learning project, a fine answer.
 - Fills: `project/plan.md`, `project/working-agreement.md`.
 
 **6. Code or no code, and the stack known**

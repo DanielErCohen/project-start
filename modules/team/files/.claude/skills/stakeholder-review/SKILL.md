@@ -1,6 +1,6 @@
 ---
 name: stakeholder-review
-description: Pre-test a draft against a named outside decider's documented, dated preferences, labelled simulated. Use when a sponsor, client, regulator or budget holder will judge a document. It never approves anything; only the real person's answer does.
+description: Pre-test a draft against a named outside decider's documented, dated preferences, labeled simulated. Use when a sponsor, client, regulator or budget holder will judge a document. It never approves anything; only the real person's answer does.
 argument-hint: [draft and the person or role]
 ---
 # Stakeholder review
@@ -11,7 +11,7 @@ Begin every output: **Simulated stakeholder review. This is preparation; it does
 
 ## Review
 
-1. Load the person's lens from `project/stakeholders.md`, at most three relevant criteria. A suspended, stale or declined criterion supports no person-specific claim; use a labelled role-based question, or report the gap.
+1. Load the person's lens from `project/stakeholders.md`, at most three relevant criteria. A suspended, stale or declined criterion supports no person-specific claim; use a labeled role-based question, or report the gap.
 2. Check baseline quality once: a clear ask, supported claims, comparable numbers, visible uncertainty, tradeoffs and a feasible next step.
 3. Mark each criterion `addressed`, `gap`, `unknown` or `not applicable`. Report at most five material findings, most useful first: location, concern, consequence for the decision, smallest edit, and the criterion with its source and date.
 4. Keep an open tradeoff as a question for the real person, with evidence on both sides. Compute no score or approval likelihood.

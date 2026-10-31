@@ -21,7 +21,7 @@ Applies to every subagent, parallel worker and other vendor's tool. Other tools 
 ## Routine tasks other tools may take
 
 - Formatting with the project's formatter.
-- Lint fixes that change no behaviour.
+- Lint fixes that change no behavior.
 - Typos in documentation and comments.
 
 Not routine: dependency bumps, renames, and anything that changes what ships. Those go to a `builder` subagent with a brief, or stay with the orchestrator.

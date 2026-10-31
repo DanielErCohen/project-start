@@ -17,7 +17,7 @@ Include what you found, the version, steps to reproduce and the impact you expec
 
 ## What to expect
 
-- An acknowledgement within 3 working days.
+- An acknowledgment within 3 working days.
 - A first assessment within 10 working days, and a fix plan with a date when the report is valid.
 - A credit in the release notes if you want one.
 

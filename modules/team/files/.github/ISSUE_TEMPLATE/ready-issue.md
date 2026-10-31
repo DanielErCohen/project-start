@@ -5,7 +5,7 @@ about: Not ready until every field exists.
 ## Summary
 <!-- Lead with what recon found in the code, then the problem. -->
 
-## Desired behaviour
+## Desired behavior
 <!-- What a person sees or can do after the change. -->
 
 ## Out of scope

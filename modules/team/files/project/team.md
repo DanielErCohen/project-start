@@ -22,7 +22,7 @@
 - **Merge mode** is `human-review` or `issues-only`. In `human-review` the person named in the Merge approval row approves every change and an agent review never counts as that approval. In `issues-only` a partner owns the code, nobody here merges, and the output is issues.
 - **Conflicting instructions:** the agent acts on neither, lists both in `project/owner.md` with the decider from the table, and works on something else.
 - **Technical choices:** the decider in that row chooses. When the row names Claude, Claude chooses and records costly ones in `decisions.md`.
-- **A grant is written down** here with scope and date ("<name> authorised the agent on <date> to <action>, except <limit>"), because a grant given in chat is lost with the session.
+- **A grant is written down** here with scope and date ("<name> authorized the agent on <date> to <action>, except <limit>"), because a grant given in chat is lost with the session.
 - **Handoff and owner file:** handoff notes go in the pull request body, and `project/owner.md` changes only on the default branch, because every branch that edits those lines conflicts with the others.
 
 ## Issues-only

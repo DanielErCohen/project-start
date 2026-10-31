@@ -16,7 +16,7 @@ Record per category how long it is kept, what deletes it and how a person export
 
 Default: none, and the agent asks. A bare "ok" does not answer on other people's data; the owner names what is allowed.
 
-- **Allowed:** templates, anonymised or invented examples, totals, the owner's own notes.
+- **Allowed:** templates, anonymized or invented examples, totals, the owner's own notes.
 - **Ask first, with the minimum fields:** anything that identifies a client, user or colleague (a name, email, an amount tied to a person, a case file). Only an approved vendor receives it.
 - **Never:** passwords and keys, card or bank numbers, identity numbers, health data, children's data, or a whole file when one field would do.
 
@@ -38,7 +38,7 @@ An approved vendor is one whose terms the owner has read, with the date in the t
 
 ## Client files
 
-Clients' personal files stay in {{OWNER}}'s own systems; the repository holds templates and anonymised examples. Anything that must sit locally goes in `private/`, which is git-ignored and denied to the Read tool, because a committed file cannot be taken back from every clone.
+Clients' personal files stay in {{OWNER}}'s own systems; the repository holds templates and anonymized examples. Anything that must sit locally goes in `private/`, which is git-ignored and denied to the Read tool, because a committed file cannot be taken back from every clone.
 
 ## Telemetry
 

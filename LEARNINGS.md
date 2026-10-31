@@ -46,7 +46,7 @@ Failures that produced a rule, and the installed file that holds each rule. A ru
 | A switch that fails closed was never configured and dropped everything silently. | modules/live-product/files/project/release.md |
 | The app's order table disagreed with the payment processor. | modules/live-product/files/project/operations.md |
 | A published promise rested on one inbox. | modules/live-product/files/project/operations.md |
-| Interface copy promised a behaviour the code lacked. | modules/live-product/files/project/operations.md |
+| Interface copy promised a behavior the code lacked. | modules/live-product/files/project/operations.md |
 | A conversion event fired on the wrong trigger and nobody saw. | modules/live-product/files/project/operations.md |
 | A drafted reply was sent before anyone read it. | modules/live-product/files/project/operations.md |
 | An over-privileged token deleted production data. | modules/live-product/files/.claude/rules/production-access.md |
