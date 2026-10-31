@@ -18,7 +18,7 @@ A lane is one independent piece of work inside a sprint: it has its own done-whe
 
 1. Recon: read-only subagents on Haiku, one per independent question.
 2. Write `project/sprints/YYYY-MM-DD-name.md` from `_template.md`: done-when items a command, test or walk can check, a reason per exclusion, lanes in build order.
-3. Challenge the plan in a fresh context (a subagent on Opus): are the done-when items checkable, does the lane order hide a dependency, does each claim about code hold at the named commit? Fold blockers and majors in.
+3. Challenge the plan in a fresh context (a subagent on Sonnet): are the done-when items checkable, does the lane order hide a dependency, does each claim about code hold at the named commit? Fold blockers and majors in.
 4. Ask the owner "This sprint builds A, B and C. Default: yes." List it in `project/owner.md` and build on the default.
 
 ## Build
